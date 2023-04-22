@@ -19,7 +19,7 @@ import math
 
 import tensorflow as tf
 
-
+print("naren-test-sync-forked-repo")
 def _next_power_of_two(x):
   """Calculates the smallest enclosing power of two for an input.
 
