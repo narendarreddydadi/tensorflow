@@ -895,7 +895,7 @@ def create_tiny_embedding_conv_model(fingerprint_input, model_settings,
   else:
     return final_fc
 
-  def create_naren_model(fingerprint_input, model_settings, is_training):
+def create_naren_model(fingerprint_input, model_settings, is_training):
     """Builds a standard convolutional model.
 
       Testing new convolutional neural network
