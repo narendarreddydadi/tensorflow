@@ -139,6 +139,9 @@ def create_model(fingerprint_input, model_settings, model_architecture,
   elif model_architecture == 'tiny_embedding_conv':
     return create_tiny_embedding_conv_model(fingerprint_input, model_settings,
                                             is_training)
+  elif model_architecture == 'naren_model':
+    return create_naren_model(fingerprint_input, model_settings,
+                                  is_training)
   else:
     raise Exception('model_architecture argument "' + model_architecture +
                     '" not recognized, should be one of "single_fc", "conv",' +
@@ -891,3 +894,87 @@ def create_tiny_embedding_conv_model(fingerprint_input, model_settings,
     return final_fc, dropout_rate
   else:
     return final_fc
+
+  def create_naren_model(fingerprint_input, model_settings, is_training):
+    """Builds a standard convolutional model.
+
+      Testing new convolutional neural network
+    """
+    if is_training:
+        dropout_rate = tf.compat.v1.placeholder(
+            tf.float32, name='dropout_rate')
+    input_frequency_size = model_settings['fingerprint_width']
+    input_time_size = model_settings['spectrogram_length']
+    fingerprint_4d = tf.reshape(fingerprint_input,
+                                [-1, input_time_size, input_frequency_size, 1])
+    first_filter_width = 8
+    first_filter_height = 20
+    first_filter_count = 64
+    first_weights = tf.compat.v1.get_variable(
+        name='first_weights',
+        initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.01),
+        shape=[first_filter_height, first_filter_width, 1, first_filter_count])
+    first_bias = tf.compat.v1.get_variable(
+        name='first_bias',
+        initializer=tf.compat.v1.zeros_initializer,
+        shape=[first_filter_count])
+
+    first_conv = tf.nn.conv2d(input=fingerprint_4d,
+                              filters=first_weights,
+                              strides=[1, 1, 1, 1],
+                              padding='SAME') + first_bias
+    first_relu = tf.nn.relu(first_conv)
+    if is_training:
+        first_dropout = tf.nn.dropout(first_relu, rate=dropout_rate)
+    else:
+        first_dropout = first_relu
+    max_pool = tf.nn.max_pool2d(input=first_dropout,
+                                ksize=[1, 2, 2, 1],
+                                strides=[1, 2, 2, 1],
+                                padding='SAME')
+    second_filter_width = 4
+    second_filter_height = 10
+    second_filter_count = 64
+    second_weights = tf.compat.v1.get_variable(
+        name='second_weights',
+        initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.01),
+        shape=[
+            second_filter_height, second_filter_width, first_filter_count,
+            second_filter_count
+        ])
+    second_bias = tf.compat.v1.get_variable(
+        name='second_bias',
+        initializer=tf.compat.v1.zeros_initializer,
+        shape=[second_filter_count])
+    second_conv = tf.nn.conv2d(input=max_pool,
+                               filters=second_weights,
+                               strides=[1, 1, 1, 1],
+                               padding='SAME') + second_bias
+    second_relu = tf.nn.relu(second_conv)
+    if is_training:
+        second_dropout = tf.nn.dropout(second_relu, rate=dropout_rate)
+    else:
+        second_dropout = second_relu
+    second_conv_shape = second_dropout.get_shape()
+    second_conv_output_width = second_conv_shape[2]
+    second_conv_output_height = second_conv_shape[1]
+    second_conv_element_count = int(
+        second_conv_output_width * second_conv_output_height *
+        second_filter_count)
+    flattened_second_conv = tf.reshape(second_dropout,
+                                       [-1, second_conv_element_count])
+    label_count = model_settings['label_count']
+    final_fc_weights = tf.compat.v1.get_variable(
+        name='final_fc_weights',
+        initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.01),
+        shape=[second_conv_element_count, label_count])
+    final_fc_bias = tf.compat.v1.get_variable(
+        name='final_fc_bias',
+        initializer=tf.compat.v1.zeros_initializer,
+        shape=[label_count])
+    final_fc = tf.matmul(flattened_second_conv,
+                         final_fc_weights) + final_fc_bias
+    if is_training:
+        return final_fc, dropout_rate
+    else:
+        return final_fc
