@@ -907,8 +907,8 @@ def create_naren_model(fingerprint_input, model_settings, is_training):
     input_time_size = model_settings['spectrogram_length']
     fingerprint_4d = tf.reshape(fingerprint_input,
                                 [-1, input_time_size, input_frequency_size, 1])
-    first_filter_width = 9
-    first_filter_height = 21
+    first_filter_width = 8
+    first_filter_height = 19
     first_filter_count = 64
     first_weights = tf.compat.v1.get_variable(
         name='first_weights',
