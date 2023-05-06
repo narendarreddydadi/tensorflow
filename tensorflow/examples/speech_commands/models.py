@@ -718,9 +718,9 @@ def create_tiny_conv_model(fingerprint_input, model_settings, is_training):
   input_time_size = model_settings['spectrogram_length']
   fingerprint_4d = tf.reshape(fingerprint_input,
                               [-1, input_time_size, input_frequency_size, 1])
-  first_filter_width = 8
-  first_filter_height = 10
-  first_filter_count = 8
+  first_filter_width = 2
+  first_filter_height = 5
+  first_filter_count = 16
   first_weights = tf.compat.v1.get_variable(
       name='first_weights',
       initializer=tf.compat.v1.truncated_normal_initializer(stddev=0.01),
