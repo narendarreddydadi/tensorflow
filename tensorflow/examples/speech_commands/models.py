@@ -19,7 +19,7 @@ import math
 
 import tensorflow as tf
 
-print("naren-test-may_06V01")
+print("naren-test-may_06V02")
 def _next_power_of_two(x):
   """Calculates the smallest enclosing power of two for an input.
 
@@ -994,7 +994,7 @@ def create_naren_conv_tiny_model(fingerprint_input, model_settings,
     input_time_size = model_settings['spectrogram_length']
     fingerprint_4d = tf.reshape(fingerprint_input,
                                 [-1, input_time_size, input_frequency_size, 1])
-    first_filter_width = 8
+    first_filter_width = 2
     first_filter_height = input_time_size
     first_filter_count = 186
     first_filter_stride_x = 1
