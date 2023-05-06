@@ -133,8 +133,8 @@ def create_model(fingerprint_input, model_settings, model_architecture,
   elif model_architecture == 'low_latency_svdf':
     return create_low_latency_svdf_model(fingerprint_input, model_settings,
                                          is_training, runtime_settings)
-  elif model_architecture == 'tiny_conv':
-    return create_tiny_conv_model(fingerprint_input, model_settings,
+  elif model_architecture == 'dadi_tiny_conv':
+    return create_dadi_conv_model(fingerprint_input, model_settings,
                                   is_training)
   elif model_architecture == 'tiny_embedding_conv':
     return create_tiny_embedding_conv_model(fingerprint_input, model_settings,
@@ -673,7 +673,7 @@ def create_low_latency_svdf_model(fingerprint_input, model_settings,
     return final_fc
 
 
-def create_tiny_conv_model(fingerprint_input, model_settings, is_training):
+def create_dadi_conv_model(fingerprint_input, model_settings, is_training):
   """Builds a convolutional model aimed at microcontrollers.
 
   Devices like DSPs and microcontrollers can have very small amounts of
@@ -718,7 +718,7 @@ def create_tiny_conv_model(fingerprint_input, model_settings, is_training):
   input_time_size = model_settings['spectrogram_length']
   fingerprint_4d = tf.reshape(fingerprint_input,
                               [-1, input_time_size, input_frequency_size, 1])
-  first_filter_width = 2
+  first_filter_width = 4
   first_filter_height = 5
   first_filter_count = 16
   first_weights = tf.compat.v1.get_variable(
